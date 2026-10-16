@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo">My College</div>
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#faculty">Faculty</a></li>
+            <li><a href="#attendance">Attendance</a></li>
+            <li><a href="#timetable">Timetable</a></li>
+            <li><a href="#messages">Messages</a></li>
+        </ul>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="home" class="section">
+        <h1>Welcome to Our College Portal</h1>
+        <p>Your one-stop destination for attendance, schedules, and official announcements.</p>
+        <button id="joinBtn" onclick="toggleJoin()">Join / Follow Website</button>
+        <p id="joinStatus" style="margin-top: 10px; color: red; font-weight: bold;">Status: Not Joined</p>
+    </section>
+
+    <!-- Faculty Section -->
+    <section id="faculty" class="section">
+        <h2>Our Faculty</h2>
+        <div class="faculty-grid">
+            <div class="faculty-card"><h3>Prof.Bushra (english)</h3><p>Professor</p></div>
+            <div class="faculty-card"><h3>Prof.Isra (Maths)</h3><p>Professor</p></div>
+            <div class="faculty-card"><h3>Prof.Fazeeela (Physics)</h3><p>Professor</p></div>
+            <div class="faculty-card"><h3>Prof.Sadia (Urdu)</h3><p>Professor</p></div>
+            <div class="faculty-card"><h3>Prof.Rabia (Islamiat)</h3><p>Professor</p></div>
+        </div>
+    </section>
+
+    <!-- Attendance Section -->
+    <section id="attendance" class="section">
+        <h2>Online Attendance</h2>
+        <button onclick="markAttendance()">Mark Today's Attendance</button>
+        <p id="attendanceStatus" style="margin-top: 10px; color: green; font-weight: bold;"></p>
+    </section>
+    <!-- Live Timetable Section -->
+    <section id="timetable" class="section">
+        <h2>Live Timetable</h2>
+        <div class="table-container"> <!-- Yeh naya dabba hai -->
+            <table border="1" id="timetableGrid">
+                <tr><th>Time</th><th>Subject</th><th>Room</th></tr>
+                <tr><td>09:00 AM</td><td>Web Dev</td><td>Lab 3</td></tr>
+                <tr><td>11:00 AM</td><td>Database</td><td>Room 102</td></tr>
+            </table>
+        </div>
+    </section>
+
+
+    <!-- Admin Message Broadcast Section -->
+    <section id="messages" class="section">
+        <h2>Message Broadcast Panel (Admin Only)</h2>
+        <textarea id="adminInput" placeholder="Type announcement for all joined members..."></textarea>
+        <br>
+        <button onclick="broadcastMessage()">Send Message</button>
+
+        <h3>Student Notice Board (Inbox)</h3>
+        <div id="noticeBoard" class="notice-board">
+            <!-- Messages yahan load honge -->
+        </div>
+    </section>
+
+    <!-- Pure JavaScript Local Storage System (No Connection Needed) -->
+    <script>
+        let isJoined = false;
+
+        // 1. Join / Follow toggle function
+        function toggleJoin() {
+            isJoined = !isJoined;
+            const statusText = document.getElementById("joinStatus");
+            const joinBtn = document.getElementById("joinBtn");
+
+            if (isJoined) {
+                statusText.innerText = "Status: Joined 🎉 (You will receive updates)";
+                statusText.style.color = "green";
+                joinBtn.innerText = "Unfollow";
+            } else {
+                statusText.innerText = "Status: Not Joined";
+                statusText.style.color = "red";
+                joinBtn.innerText = "Join / Follow Website";
+            }
+            listenForMessages();
+        }
+
+        // 2. Broadcast Message - System storage me save karna
+        function broadcastMessage() {
+            const messageInput = document.getElementById("adminInput");
+            const messageText = messageInput.value.trim();
+
+            if (messageText === "") {
+                alert("Please type a message first!");
+                return;
+            }
+
+            // Pehle se maujood messages nikalna
+            let messagesList = JSON.parse(localStorage.getItem("college_announcements")) || [];
+            
+            // Naya message list me jorna
+            messagesList.push(messageText);
+            
+            // Dobara storage me save karna
+            localStorage.setItem("college_announcements", JSON.stringify(messagesList));
+
+            messageInput.value = ""; 
+            alert("Message Broadcasted Successfully! 📢");
+            
+            listenForMessages();
+        }
+
+        // 3. Messages load karke screen par dikhana (Sirf joined users ke liye)
+        function listenForMessages() {
+            const noticeBoard = document.getElementById("noticeBoard");
+            
+            if (!isJoined) {
+                noticeBoard.innerHTML = "<p style='color: red; font-weight: bold;'>⚠️ Please JOIN the website above to see the official messages/announcements.</p>";
+                return;
+            }
+
+            let messagesList = JSON.parse(localStorage.getItem("college_announcements")) || [];
+
+            if (messagesList.length === 0) {
+                noticeBoard.innerHTML = "<p>No new announcements yet.</p>";
+                return;
+            }
+
+            let htmlContent = "<ul>";
+            // Latest messages ko upar dikhane ke liye reverse order
+            messagesList.slice().reverse().forEach(msg => {
+                htmlContent += `<li style="margin-bottom: 8px; list-style-type: none;">📢 ${msg}</li>`;
+            });
+            htmlContent += "</ul>";
+            noticeBoard.innerHTML = htmlContent;
+        }
+
+        function markAttendance() {
+            document.getElementById("attendanceStatus").innerText = "✅ Attendance marked successfully for today!";
+        }
+
+        // Shuruat me check run karein
+        listenForMessages();
+    </script>
+</body>
+</html>
